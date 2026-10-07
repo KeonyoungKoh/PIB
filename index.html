@@ -11,7 +11,7 @@
   <!-- Open Graph / social preview -->
   <meta property="og:title" content="Remembering What You Don't Know">
   <meta property="og:description" content="Planning with Persistent Identity Beliefs under Perceptual Aliasing">
-  <meta property="og:image" content="./static/images/paper/1.png">
+  <meta property="og:image" content="https://keonyoungkoh.github.io/PIB/static/images/paper/1.png">
   <meta name="twitter:card" content="summary_large_image">
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
@@ -86,11 +86,11 @@
                   <span>arXiv (soon)</span>
                 </a>
               </span>
-              <!-- TODO: replace href with the video link -->
               <span class="link-block">
-                <a href="#" class="external-link button is-normal is-rounded is-dark" disabled>
-                  <span class="icon"><i class="fab fa-youtube"></i></span>
-                  <span>Video (soon)</span>
+                <a href="./static/videos/teaser.mp4" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-video"></i></span>
+                  <span>Video</span>
                 </a>
               </span>
               <!-- TODO: replace href with the code repository -->
@@ -111,9 +111,10 @@
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
-      <figure>
-        <img src="./static/images/paper/1.png" alt="Teaser: visually aliased Allen keys relocated by a collaborator">
-      </figure>
+      <video id="teaser" controls muted autoplay loop playsinline preload="metadata"
+             poster="./static/videos/teaser_poster.jpg" width="100%" style="border-radius: 6px;">
+        <source src="./static/videos/teaser.mp4" type="video/mp4">
+      </video>
       <h2 class="subtitle has-text-centered" style="margin-top: 1rem;">
         When a collaborator relocates <b>visually identical tools</b> out of view, the robot keeps
         <b>competing identity beliefs</b> and decides whether to <b>act</b> or <b>inspect</b>
@@ -200,6 +201,14 @@
     <div class="columns is-centered">
       <div class="column is-full-width">
         <h2 class="title is-3">The Problem: Which Tool Is Which?</h2>
+        <figure>
+          <img src="./static/images/paper/1.png" alt="Visually aliased Allen keys relocated while unobserved">
+        </figure>
+        <p class="figure-caption" style="margin-bottom: 1.5rem;">
+          Persistent identity can become ambiguous when perceptually aliased tools get relocated while they are
+          unobserved or occluded. The robot maintains competing identity beliefs and chooses whether to act or
+          inspect based on downstream cost.
+        </p>
         <div class="content has-text-justified">
           <p>
             Collaborative robots hand tools to people, take them back, and reuse them later. This implicitly assumes
@@ -210,8 +219,9 @@
           </p>
           <p>
             Existing visuomotor memories and 3D scene graphs commit to a single target, so an unobserved swap
-            produces a <b>confidently wrong handover</b> and a costly recovery. Inspecting every candidate, on the
-            other hand, adds motion and latency to every request. Our approach is a memory that
+            produces a <b>confidently wrong handover</b>. Such an error not only takes time to recover from, but also
+            forces the collaborator to divert attention from their own task, and lowers the trust people place in the
+            robot. Inspecting every candidate, on the other hand, adds motion and latency to every request. Our approach is a memory that
             <b>remembers what it does not know</b>, paired with a planner that inspects only when it is worth it.
           </p>
         </div>
@@ -226,9 +236,8 @@
           <img src="./static/images/paper/2.png" alt="System overview">
         </figure>
         <p class="figure-caption">
-          <b>System overview.</b> Anonymous per-frame observations are fused into a joint persistent identity
-          belief; the planner marginalizes that belief on demand for decision making, choosing between direct
-          action and active inspection before a VLA policy executes the primitive.
+          <b>System overview.</b> Anonymous per-frame observations update a persistent identity belief, from which
+          the planner chooses to act or inspect; a VLA policy executes the choice.
         </p>
 
         <h3 class="title is-4" style="margin-top: 2rem;">Hypothesis-Conditioned Identity Memory</h3>
@@ -257,7 +266,7 @@
           <p>
             The planner reads the marginal identity belief
             $B(i,j)=\sum_{h\in\mathcal{H}}W_h\,\mathbb{I}[a_i^h=j]$
-            (never fed back into filtering) and compares acting and inspecting in units of execution time:
+            and compares acting and inspecting in units of execution time:
           </p>
           $$\begin{aligned}
           Q_{\mathrm{act}}(j)&=B(i^*,j)\,T_s(j,e)+\sum_{m\ne i^*}B(m,j)\big[T_w(j,e)+V(b_{j,m},e_{\mathrm{return}})\big],\\
@@ -429,8 +438,10 @@
             </li>
           </ul>
           <p>
-            The planner does not inspect whenever uncertainty exists; it concentrates verification where the belief
-            and the task cost make a wrong commitment consequential.
+            MAP action is 3.7&nbsp;s faster on average, since its candidate is already correct in 91% of trials. The
+            planner's benefit is instead the ability to trade inspection cost against wrong handovers, whose cost to
+            the collaborator execution time does not capture. It does not inspect whenever uncertainty exists; it
+            concentrates verification where the belief and the task cost make a wrong commitment consequential.
           </p>
         </div>
 
@@ -502,6 +513,23 @@
             The replay benchmark isolates the same post-intervention ambiguity that occurs in the full interaction.
             Executing the complete sequence end to end shows that the identity posterior changes the executed
             manipulation strategy, rather than serving only as an offline association score.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conclusion. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Conclusion</h2>
+        <div class="content has-text-justified">
+          <p>
+            Rather than forcing memory to resolve ambiguity into a single identity estimate, our framework exposes
+            persistent identity uncertainty as a <b>planning-facing state</b>, allowing downstream decision making to
+            determine when uncertainty is tolerable and when additional perception is worth its cost. Real-robot
+            replay experiments show that joint hypotheses and relocation modeling reduce overconfident identity errors
+            and enable this act-or-inspect trade-off, supporting uncertainty-aware persistent world models as an
+            interface between perception, memory, and task-level planning.
           </p>
         </div>
       </div>

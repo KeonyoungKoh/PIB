@@ -11,5 +11,4 @@ python3 -m http.server 8000
 Then open http://localhost:8000.
 
 ## TODO
-- arXiv / video / code links in `index.html` (search `TODO`)
-- Demo video section (commented out in `index.html`)
+- arXiv / code links in `index.html` (search `TODO`)
