@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="A persistent identity belief and belief-aware planner that lets robots act or inspect when visually aliased tools are relocated by a human while unobserved.">
+  <meta name="keywords" content="persistent identity, perceptual aliasing, multi-hypothesis tracking, belief-space planning, human-robot collaboration, VLA">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Remembering What You Don't Know: Planning with Persistent Identity Beliefs under Perceptual Aliasing</title>
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:title" content="Remembering What You Don't Know">
+  <meta property="og:description" content="Planning with Persistent Identity Beliefs under Perceptual Aliasing">
+  <meta property="og:image" content="./static/images/paper/1.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script>
+    window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}};
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <style>
+    .result-table { margin: 0 auto; }
+    .result-table td, .result-table th { text-align: center !important; }
+    .result-table td:first-child, .result-table th:first-child { text-align: left !important; }
+    .result-table tr.is-ours { background: #f3f8ff; font-weight: 600; }
+    .stat-box { text-align: center; padding: 1.25rem 0.5rem; }
+    .stat-box .stat-number { font-family: 'Google Sans', sans-serif; font-size: 2.2rem; font-weight: 700; color: #3273dc; }
+    .stat-box .stat-label { font-size: 0.95rem; color: #4a4a4a; }
+    .figure-caption { font-size: 0.95rem; color: #4a4a4a; margin-top: 0.75rem; text-align: justify; }
+    .tldr { background: #f5f5f5; border-left: 4px solid #3273dc; padding: 1rem 1.25rem; border-radius: 4px; }
+    figure img { width: 100%; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Remembering What You Don't Know</h1>
+          <h2 class="subtitle is-3 publication-title">Planning with Persistent Identity Beliefs under Perceptual Aliasing</h2>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Brendon T. Murphy<sup>1,2*</sup>,</span>
+            <span class="author-block">Keonyoung Koh<sup>1*</sup>,</span>
+            <span class="author-block">Woobean Seo<sup>1*</sup>,</span>
+            <span class="author-block">Hoseong Kwak<sup>1</sup>,</span>
+            <span class="author-block">Chunghun Ha<sup>1</sup>,</span>
+            <span class="author-block">Duhyun Ro<sup>1,3&dagger;</sup></span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>CONNECTEVE Co., Ltd.,</span>
+            <span class="author-block"><sup>2</sup>Massachusetts Institute of Technology,</span>
+            <span class="author-block"><sup>3</sup>Seoul National University</span>
+          </div>
+          <div class="is-size-6 publication-authors">
+            <span class="author-block"><sup>*</sup>Equal contribution &nbsp; <sup>&dagger;</sup>Corresponding author</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="./static/pdfs/paper.pdf" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- TODO: replace href with the arXiv link -->
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark" disabled>
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv (soon)</span>
+                </a>
+              </span>
+              <!-- TODO: replace href with the video link -->
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark" disabled>
+                  <span class="icon"><i class="fab fa-youtube"></i></span>
+                  <span>Video (soon)</span>
+                </a>
+              </span>
+              <!-- TODO: replace href with the code repository -->
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark" disabled>
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code (soon)</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <figure>
+        <img src="./static/images/paper/1.png" alt="Teaser: visually aliased Allen keys relocated by a collaborator">
+      </figure>
+      <h2 class="subtitle has-text-centered" style="margin-top: 1rem;">
+        When a collaborator relocates <b>visually identical tools</b> out of view, the robot keeps
+        <b>competing identity beliefs</b> and decides whether to <b>act</b> or <b>inspect</b>
+        based on downstream cost.
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Robots that share tools with people must preserve object identity across occlusions and
+            unobserved human manipulation, even when multiple instances are visually aliased. We present a
+            <b>persistent identity belief</b> that maintains competing joint entity&ndash;observation hypotheses
+            instead of collapsing to a single assignment, augments them with relocation uncertainty after human
+            interaction, and exposes probabilistic identity marginals to a <b>belief-aware planner</b>.
+            The planner chooses between acting on the current belief and inspecting a candidate when the expected
+            cost of disambiguation is lower than the risk of a wrong handover.
+          </p>
+          <p>
+            We evaluate the critical human-intervention event from a closed-loop Allen-key handover task over
+            99 replayed real episodes. Joint hypotheses and relocation modeling substantially reduce confidently
+            wrong beliefs, while belief-aware planning reduces wrong handovers relative to maximum a posteriori
+            (MAP) action and avoids the fixed overhead of always inspecting.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Key numbers. -->
+    <div class="columns is-centered">
+      <div class="column is-four-fifths">
+        <div class="columns is-mobile is-multiline">
+          <div class="column is-half-mobile is-one-quarter-tablet stat-box">
+            <div class="stat-number">99</div>
+            <div class="stat-label">real-robot replayed episodes</div>
+          </div>
+          <div class="column is-half-mobile is-one-quarter-tablet stat-box">
+            <div class="stat-number">18&rarr;1</div>
+            <div class="stat-label">confidently wrong beliefs<br>vs. single hypothesis</div>
+          </div>
+          <div class="column is-half-mobile is-one-quarter-tablet stat-box">
+            <div class="stat-number">9&rarr;2</div>
+            <div class="stat-label">wrong handovers<br>vs. MAP action</div>
+          </div>
+          <div class="column is-half-mobile is-one-quarter-tablet stat-box">
+            <div class="stat-number">37/99</div>
+            <div class="stat-label">inspections<br>vs. 99 always-inspect</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Video placeholder. TODO: replace with the demo video embed. -->
+<!--
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Video</h2>
+        <div class="publication-video">
+          <iframe src="https://www.youtube.com/embed/VIDEO_ID?rel=0&amp;showinfo=0"
+                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+-->
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <!-- Problem. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">The Problem: Which Tool Is Which?</h2>
+        <div class="content has-text-justified">
+          <p>
+            Collaborative robots hand tools to people, take them back, and reuse them later. This implicitly assumes
+            the robot knows <i>which physical tool is which</i>. That assumption breaks when two conditions coincide:
+            tools are <b>visually aliased</b> (e.g., Allen keys that differ only in size), and a collaborator
+            <b>relocates them while unobserved</b>. Perception can recover <i>where</i> the visible candidates are,
+            but not <i>which</i> tool each one is.
+          </p>
+          <p>
+            Existing visuomotor memories and 3D scene graphs commit to a single target, so an unobserved swap
+            produces a <b>confidently wrong handover</b> and a costly recovery. Inspecting every candidate, on the
+            other hand, adds motion and latency to every request. Our approach is a memory that
+            <b>remembers what it does not know</b>, paired with a planner that inspects only when it is worth it.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Method. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Method</h2>
+        <figure>
+          <img src="./static/images/paper/2.png" alt="System overview">
+        </figure>
+        <p class="figure-caption">
+          <b>System overview.</b> Anonymous per-frame observations are fused into a joint persistent identity
+          belief; the planner marginalizes that belief on demand for decision making, choosing between direct
+          action and active inspection before a VLA policy executes the primitive.
+        </p>
+
+        <h3 class="title is-4" style="margin-top: 2rem;">Hypothesis-Conditioned Identity Memory</h3>
+        <div class="content has-text-justified">
+          <p>
+            Rather than committing to one association, the memory keeps a weighted bank $\mathcal{H}$ of mutually
+            consistent joint hypotheses. Each hypothesis binds every persistent entity $E_i$ to a current anonymous
+            observation $o_j$ (or to &ldquo;unobserved&rdquo;) and carries a 3D Gaussian position and a
+            <b>relocation probability</b> $\pi_{i,h}$:
+          </p>
+          $$h=\Big(\mathbf{a}^h,\{\mu_{i,h},\Sigma_{i,h},\pi_{i,h}\}_{i=1}^{K}\Big).$$
+          <p>
+            When a tool class is manipulated out of view, tracking is suspended. On resume, the predictive density
+            mixes &ldquo;still near the remembered pose&rdquo; with &ldquo;moved elsewhere&rdquo;:
+          </p>
+          $$p_{i,h}^-(X) = (1-\pi_{i,h}^-)\,\mathcal{N}(X; \mu_{i,h}^-, \Sigma_{i,h}^-) + \pi_{i,h}^-\, q_{i,h}^{\mathrm{rel}}(X).$$
+          <p>
+            Each parent hypothesis branches over valid one-to-one, class-consistent assignments, scored by
+            visibility-aware hit/miss likelihoods and a tracker continuation prior, then globally normalized.
+            Both explanations survive until evidence resolves them.
+          </p>
+        </div>
+
+        <h3 class="title is-4">Belief-Aware Action Planner</h3>
+        <div class="content has-text-justified">
+          <p>
+            The planner reads the marginal identity belief
+            $B(i,j)=\sum_{h\in\mathcal{H}}W_h\,\mathbb{I}[a_i^h=j]$
+            (never fed back into filtering) and compares acting and inspecting in units of execution time:
+          </p>
+          $$\begin{aligned}
+          Q_{\mathrm{act}}(j)&=B(i^*,j)\,T_s(j,e)+\sum_{m\ne i^*}B(m,j)\big[T_w(j,e)+V(b_{j,m},e_{\mathrm{return}})\big],\\
+          Q_{\mathrm{inspect}}(j)&=T_i(j,e)+\sum_m B(m,j)\,V(b_{j,m},e_{\mathrm{inspect}}).
+          \end{aligned}$$
+          <p>
+            Inspection is therefore triggered by the expected downstream cost of a mistake, not by a fixed
+            confidence threshold. Because hypotheses are joint, conditioning on one candidate's identity also updates
+            the others.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Experiments</h2>
+
+        <!-- Protocol. -->
+        <h3 class="title is-4">Evaluation Scenario and Protocol</h3>
+        <div class="columns is-vcentered">
+          <div class="column is-5">
+            <figure>
+              <img src="./static/images/paper/4.png" alt="Real-world experimental setup">
+            </figure>
+            <p class="figure-caption">
+              KUKA LBR Med 14 R820 with a Robotiq 2F-85 gripper. The wrist-mounted RealSense D405 is the
+              <i>only</i> sensor used by the memory and planner; the external Orbbec Femto Mega feeds VP-VLA only.
+            </p>
+          </div>
+          <div class="column">
+            <div class="content has-text-justified">
+              <p>
+                We evaluate the identity-ambiguity event of the handover task. An original Allen key is observed in a
+                shared bucket; while the wrist camera looks elsewhere, the collaborator returns a visually similar key
+                and may displace the original (0.1&ndash;8.7&nbsp;cm, median 4.0&nbsp;cm). The robot must then
+                identify the original. We repeat this for <b>100 real episodes</b> (99 with a valid decision record).
+              </p>
+              <p>
+                Recorded frames and robot poses are <b>replayed through every memory variant</b>, so all variants
+                receive identical sensory evidence. Policy outcomes are computed against the annotated identity: a
+                wrong candidate is refused and identified by the collaborator, while an inspection reveals the
+                candidate's identity. Each primitive cost is grounded in real VLA rollouts.
+              </p>
+            </div>
+            <table class="table is-narrow is-hoverable result-table">
+              <thead>
+              <tr><th>Primitive duration</th><th>Measured (10 rollouts)</th><th>Planner forecast</th></tr>
+              </thead>
+              <tbody>
+              <tr><td>Successful handover</td><td>21.37 s</td><td>20.82 s</td></tr>
+              <tr><td>Inspection (additional)</td><td>16.96 s</td><td>11.24 s</td></tr>
+              <tr><td>Refusal / recovery</td><td>15.73 s</td><td>14.53 s</td></tr>
+              </tbody>
+            </table>
+            <p class="figure-caption">
+              The deployed planner decides with a forecast calibrated from VLA training demonstrations; all policies
+              are <i>scored</i> with measured durations. The forecast underestimates inspection by ~6&nbsp;s.
+            </p>
+          </div>
+        </div>
+
+        <!-- Memory ablation. -->
+        <h3 class="title is-4" style="margin-top: 2.5rem;">Identity Memory: Full Ablation</h3>
+        <div class="table-container">
+          <table class="table is-narrow is-hoverable result-table">
+            <thead>
+            <tr>
+              <th></th><th>Memory</th>
+              <th>MAP&nbsp;&uarr;</th><th>NLL&nbsp;&darr;</th><th>Brier&nbsp;&darr;</th><th>CW&nbsp;&darr;</th>
+              <th>Time [s]&nbsp;&darr;</th><th>Wrong&nbsp;&darr;</th><th>Inspect&nbsp;&darr;</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr class="is-ours"><td></td><td>Full (ours)</td><td><b>0.91</b></td><td><b>0.33</b></td><td>0.10</td><td>1</td><td>28.46</td><td>2</td><td>37</td></tr>
+            <tr><td>Hypotheses</td><td>Single hypothesis</td><td>0.82</td><td>1.26</td><td>0.18</td><td>18</td><td>28.12</td><td>18</td><td><b>0</b></td></tr>
+            <tr><td>Relocation</td><td>w/o relocation</td><td><b>0.91</b></td><td>0.63</td><td><b>0.09</b></td><td>9</td><td><b>24.74</b></td><td>9</td><td><b>0</b></td></tr>
+            <tr><td></td><td>Always relocated</td><td><b>0.91</b></td><td>0.45</td><td>0.13</td><td><b>0</b></td><td>30.48</td><td><b>1</b></td><td>51</td></tr>
+            <tr><td></td><td>Uniform relocation only</td><td>0.79</td><td>0.42</td><td>0.14</td><td>2</td><td>30.34</td><td>2</td><td>48</td></tr>
+            <tr><td>Evidence</td><td>w/o negative spatial update</td><td>0.68</td><td>0.87</td><td>0.25</td><td>17</td><td>33.17</td><td>26</td><td>12</td></tr>
+            <tr><td></td><td>w/o observation hold<sup>&dagger;</sup></td><td>0.59</td><td>0.85</td><td>0.27</td><td>6</td><td>35.32</td><td>28</td><td>21</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="figure-caption">
+          CW: confidently wrong trials (incorrect MAP identity with confidence &ge; 0.9). Time / Wrong / Inspect are
+          the downstream behavior of the same expected-cost planner on each memory.
+          <sup>&dagger;</sup>Without observation hold, all 100 episodes yield a valid decision; other rows use the
+          common 99-episode subset.
+        </p>
+
+        <div class="content has-text-justified" style="margin-top: 1.25rem;">
+          <ul>
+            <li>
+              <b>Joint hypotheses prevent confident identity collapse.</b> A single hypothesis drops MAP accuracy from
+              0.91 to 0.82, but the larger effect is calibration: NLL 0.33&rarr;1.26 and CW 1&rarr;18. The planner
+              receives a nearly deterministic but wrong belief, never inspects, and makes 18 wrong handovers.
+            </li>
+            <li>
+              <b>Relocation uncertainty matters even when MAP accuracy is unchanged.</b> Without the relocation
+              alternative, MAP stays at 0.91 but NLL nearly doubles and CW rises to 9; the planner degenerates to
+              MAP action (9 wrong handovers). Treating every entity as relocated removes confident errors but
+              discards useful memory, raising inspections from 37 to 51.
+            </li>
+            <li>
+              <b>The relocation prior should retain local scene structure.</b> A uniform-only relocation density
+              lowers MAP accuracy to 0.79 and causes 48 inspections &mdash; tools are often only nudged from where
+              they were.
+            </li>
+            <li>
+              <b>Negative spatial evidence must change the state, not only its weight.</b> Without it, misses are
+              repeatedly scored against a stale spatial prior: MAP 0.68, 17 CW trials, 26 wrong handovers.
+            </li>
+            <li>
+              <b>Observation holding is a perception safeguard.</b> Without it, unstable centroids from newly emerging
+              or truncated masks claim persistent identities too early (MAP 0.59).
+            </li>
+          </ul>
+          <p>
+            Top-1 accuracy alone is insufficient for a planning-facing memory: the full model and the no-relocation
+            variant have identical MAP accuracy, yet very different confident-error counts and downstream behavior.
+          </p>
+        </div>
+
+        <!-- Planner breakdown. -->
+        <h3 class="title is-4" style="margin-top: 2.5rem;">Planner Behavior by Ambiguity Level</h3>
+        <div class="table-container">
+          <table class="table is-narrow is-hoverable result-table">
+            <thead>
+            <tr>
+              <th></th><th></th>
+              <th colspan="3">Ours</th><th colspan="2">MAP action</th><th colspan="2">Always inspect</th>
+            </tr>
+            <tr>
+              <th>Displacement</th><th>$n$</th>
+              <th>Time [s]</th><th>Wrong</th><th>Inspect</th>
+              <th>Time [s]</th><th>Wrong</th>
+              <th>Time [s]</th><th>Inspect</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr><td><b>All</b></td><td>99</td><td>28.46&plusmn;0.93</td><td><b>2</b></td><td>37</td><td>24.74&plusmn;1.08</td><td>9</td><td>38.33&plusmn;0.00</td><td>99</td></tr>
+            <tr><td>&lt; 1 cm</td><td>10</td><td>21.37</td><td>0</td><td>0</td><td>21.37</td><td>0</td><td>38.33</td><td>10</td></tr>
+            <tr><td>1&ndash;3 cm</td><td>18</td><td>21.37</td><td>0</td><td>0</td><td>21.37</td><td>0</td><td>38.33</td><td>18</td></tr>
+            <tr><td>3&ndash;5 cm</td><td>40</td><td>27.31</td><td>0</td><td>14</td><td>21.37</td><td>0</td><td>38.33</td><td>40</td></tr>
+            <tr><td>5&ndash;9 cm</td><td>31</td><td>36.35</td><td><b>2</b></td><td>23</td><td>32.14</td><td>9</td><td>38.33</td><td>31</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="figure-caption">
+          Policies acting on the full memory. Times are mean &plusmn; SEM across episodes, computed from measured
+          primitive durations.
+        </p>
+        <div class="content has-text-justified" style="margin-top: 1rem;">
+          <ul>
+            <li>
+              <b>&lt; 3 cm:</b> the belief is near-certain and the planner acts directly in every trial, matching MAP
+              action and avoiding the fixed cost of always inspecting.
+            </li>
+            <li>
+              <b>3&ndash;5 cm:</b> the belief is underconfident (MAP action is correct in all 40 trials). Combined with
+              the underestimated inspection forecast, this yields 14 unnecessary inspections, which account for
+              2.4&nbsp;s of the 3.7&nbsp;s mean-time gap to MAP action.
+            </li>
+            <li>
+              <b>5&ndash;9 cm:</b> where identity history is most disrupted, the planner inspects 23 times and cuts wrong
+              handovers from 9 to 2, at 4.2&nbsp;s per request (36.35 vs. 32.14&nbsp;s).
+            </li>
+          </ul>
+          <p>
+            The planner does not inspect whenever uncertainty exists; it concentrates verification where the belief
+            and the task cost make a wrong commitment consequential.
+          </p>
+        </div>
+
+        <!-- Cost trade-off. -->
+        <h3 class="title is-4" style="margin-top: 2.5rem;">Time&ndash;Error Trade-off and Cost Sensitivity</h3>
+        <div class="columns">
+          <div class="column">
+            <figure>
+              <img src="./static/images/paper/fig3_pareto.png" alt="Time-error trade-off">
+            </figure>
+            <p class="figure-caption">
+              <b>Time&ndash;error trade-off.</b> Each point is the planner deciding with different costs, scored with
+              measured costs. Circle / diamond: deciding with measured / forecast costs. Dotted: random mix of MAP
+              action and always-inspect. Numbers: inspections out of 99.
+            </p>
+          </div>
+          <div class="column">
+            <figure>
+              <img src="./static/images/paper/fig_cost_sweep.png" alt="Cost-ratio sweep">
+            </figure>
+            <p class="figure-caption">
+              <b>Cost-ratio sweep.</b> Same costs for deciding and scoring; the ratio is varied through the inspection
+              duration. Top: extra time per request over the oracle, in units of one inspection. Bottom: wrong
+              handovers. The vertical line marks the measured costs of our task.
+            </p>
+          </div>
+        </div>
+        <div class="content has-text-justified">
+          <ul>
+            <li>
+              <b>An efficient front.</b> Removing 7 of the 9 wrong handovers takes 26 inspections and 1.8&nbsp;s per
+              request over MAP action, where random inspection would need 77; zero wrong handovers are reached
+              4.7&nbsp;s faster than always-inspect.
+            </li>
+            <li>
+              <b>Behavior adapts to the cost ratio.</b> Below a wrong-handover/inspection ratio of about 2, the planner
+              acts directly and matches MAP action. Above it, wrong handovers fall from 9 to 2 by a ratio of 2.7 and
+              to 1 beyond 4.8. In time, MAP action stays faster up to a ratio of about 6.8, because the belief is
+              underconfident (trials with MAP confidence 0.6&ndash;0.8 are correct in 29 of 31 cases).
+            </li>
+            <li>
+              <b>Cost-model error is distinct from belief error.</b> Deciding with measured instead of forecast
+              durations reduces inspections from 37 to 8 and time from 28.46 to 24.98&nbsp;s (within 0.3&nbsp;s of
+              MAP action), at 6 rather than 2 wrong handovers. The measured-cost decision lies on the front; the
+              forecast-cost decision misses it by 1.9&nbsp;s at the same error count.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real-robot demo. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Closed-Loop Real-Robot Demonstration</h2>
+        <figure>
+          <img src="./static/images/paper/5.png" alt="Closed-loop real-robot demonstration">
+        </figure>
+        <p class="figure-caption">
+          (a) Shared task prefix: the robot hands over the 2&nbsp;mm and 2.5&nbsp;mm Allen keys, which the
+          collaborator returns to the bucket so that two visually aliased candidates remain when the 2&nbsp;mm key is
+          requested again. (b) High-ambiguity case: MAP action commits to the wrong candidate and requires refusal
+          and recovery, whereas our planner first performs a wrist-camera close-up inspection and then hands over the
+          verified key. (c) Low-ambiguity case: always-inspect incurs an unnecessary verification motion, while our
+          planner acts directly on the confident identity belief.
+        </p>
+        <div class="content has-text-justified" style="margin-top: 1rem;">
+          <p>
+            The replay benchmark isolates the same post-intervention ambiguity that occurs in the full interaction.
+            Executing the complete sequence end to end shows that the identity posterior changes the executed
+            manipulation strategy, rather than serving only as an offline association score.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Limitations. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Limitations</h2>
+        <div class="content has-text-justified">
+          <ul>
+            <li>
+              <b>Value of recursive planning.</b> In this scenario, a single inspection resolves both identities, so
+              the decision reduces to a one-step act-vs-inspect comparison. A tuned confidence threshold traces nearly
+              the same front (within 0.4&nbsp;s), so we do not claim an advantage of recursive search over thresholding
+              here; the cost-based rule provides an operating point derived from action costs rather than a
+              hand-tuned threshold.
+            </li>
+            <li>
+              <b>Belief calibration.</b> The memory is underconfident at intermediate confidence, which contributes to
+              unnecessary inspections in the 3&ndash;5&nbsp;cm regime and delays the cost ratio at which the planner
+              outperforms MAP action.
+            </li>
+            <li>
+              <b>Sample size and scope.</b> 99 trials of a single scenario (two aliased Allen keys, one collaborator,
+              displacements below 9&nbsp;cm). Wrong-handover counts are in the single digits, so differences of one or
+              two are within sampling noise. Policy outcomes are counterfactual, computed from replayed beliefs and
+              measured primitive durations.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@misc{murphy2026remembering,
+  author    = {Murphy, Brendon T. and Koh, Keonyoung and Seo, Woobean and Kwak, Hoseong and Ha, Chunghun and Ro, Duhyun},
+  title     = {Remembering What You Don't Know: Planning with Persistent Identity Beliefs under Perceptual Aliasing},
+  year      = {2026},
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link" href="./static/pdfs/paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>
+            This website is adapted from the <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>
+            template, licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
