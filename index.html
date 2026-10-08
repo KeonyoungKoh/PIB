@@ -125,13 +125,13 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            Robots that share tools with people must preserve object identity across occlusions and
-            unobserved human manipulation, even when multiple instances are visually aliased. We present a
+            Robots that share tools with people often face visually aliased tools whose identities become uncertain
+            after unobserved human manipulation. The robot must then act on a belief about which tool is which rather
+            than on a known identity. We present a <b>belief-aware planner</b> that chooses between acting on the
+            current belief and inspecting a candidate when the expected cost of disambiguation is lower than the risk
+            of a wrong handover. To give this decision the uncertainty it needs, we introduce a
             <b>persistent identity belief</b> that maintains competing joint entity&ndash;observation hypotheses
-            instead of collapsing to a single assignment, augments them with relocation uncertainty after human
-            interaction, and exposes probabilistic identity marginals to a <b>belief-aware planner</b>.
-            The planner chooses between acting on the current belief and inspecting a candidate when the expected
-            cost of disambiguation is lower than the risk of a wrong handover.
+            instead of collapsing to a single assignment.
           </p>
           <p>
             We evaluate the critical human-intervention event from a closed-loop Allen-key handover task over
@@ -305,6 +305,11 @@
                 wrong candidate is refused and identified by the collaborator, while an inspection reveals the
                 candidate's identity. Each primitive cost is grounded in real VLA rollouts.
               </p>
+              <p>
+                For planning we compare against three baselines: <b>MAP action</b>, which collapses the belief to the
+                MAP identity before planning; <b>always-inspect</b>, which verifies identity before every action; and
+                an <b>identity oracle</b> with access to the true correspondence.
+              </p>
             </div>
             <table class="table is-narrow is-hoverable result-table">
               <thead>
@@ -431,9 +436,10 @@
             </li>
           </ul>
           <p>
-            MAP action is 3.7&nbsp;s faster on average, since its candidate is already correct in 91% of trials. The
-            planner's benefit is instead the ability to trade inspection cost against wrong handovers, whose cost to
-            the collaborator execution time does not capture. It does not inspect whenever uncertainty exists; it
+            Scored with measured durations, MAP action is 3.7&nbsp;s faster on average, while the time lost to
+            rejected handovers is small on average. Although the planner does not dominate MAP on mean time in this
+            cost regime, its benefit is the ability to trade execution risk against inspection cost rather than
+            committing to either extreme. It does not inspect whenever uncertainty exists; it
             concentrates verification where the belief and the task cost make a wrong commitment consequential.
           </p>
         </div>
@@ -524,6 +530,11 @@
             and enable this act-or-inspect trade-off, supporting uncertainty-aware persistent world models as an
             interface between perception, memory, and task-level planning.
           </p>
+          <p>
+            Future work will incorporate richer priors over human interaction and object relocation by leveraging
+            task knowledge. Evaluating more aliased candidates and imperfect inspections will more fully test
+            generalization, joint-hypothesis resolution, and recursive planning.
+          </p>
         </div>
       </div>
     </div>
@@ -542,9 +553,10 @@
               hand-tuned threshold.
             </li>
             <li>
-              <b>Belief calibration.</b> The memory is underconfident at intermediate confidence, which contributes to
-              unnecessary inspections in the 3&ndash;5&nbsp;cm regime and delays the cost ratio at which the planner
-              outperforms MAP action.
+              <b>Belief calibration and cost-model error.</b> Underconfidence in the identity belief and
+              underestimation of inspection cost by the deployed forecast both contribute to unnecessary inspections in
+              the 3&ndash;5&nbsp;cm regime. Together, these effects degrade the planner's time&ndash;error trade-off
+              relative to MAP action at moderate cost ratios.
             </li>
             <li>
               <b>Sample size and scope.</b> 99 trials of a single scenario (two aliased Allen keys, one collaborator,
