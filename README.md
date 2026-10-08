@@ -11,4 +11,4 @@ python3 -m http.server 8000
 Then open http://localhost:8000.
 
 ## TODO
-- arXiv / code links in `index.html` (search `TODO`)
+- arXiv link in `index.html` (search `TODO`)
